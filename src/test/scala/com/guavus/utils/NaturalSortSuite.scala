@@ -36,4 +36,22 @@ class NaturalSortSuite extends FunSuite with Matchers {
     sortedList should contain theSameElementsInOrderAs resultList
   }
 
+  test("natural order test with only numerals") {
+    val unorderedList: List[String] = List("123", "234", "9", "560", "12345", "123", "10", "1")
+    val resultList: List[String] = List("1", "9", "10", "123", "123", "234", "560", "12345")
+    val Comparator = new NaturalComparator
+    val sortedList = unorderedList.sortWith(Comparator.compareBool)
+
+    sortedList should contain theSameElementsInOrderAs resultList
+  }
+
+  test("complex natural order test") {
+    val unorderedList: List[String] = List("this54complex", "this100complex90", "this23", "this23more", "this99complex90", "54complex")
+    val resultList: List[String] = List("54complex", "this23", "this23more", "this54complex", "this99complex90", "this100complex90")
+    val Comparator = new NaturalComparator
+    val sortedList = unorderedList.sortWith(Comparator.compareBool)
+
+    sortedList should contain theSameElementsInOrderAs resultList
+  }
+
 }
