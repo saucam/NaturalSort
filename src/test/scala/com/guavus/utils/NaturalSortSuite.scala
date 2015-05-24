@@ -1,5 +1,10 @@
 package com.guavus.utils
 
+import com.google.common.base.Stopwatch
+import com.google.common.io.Files
+
+import java.io.File
+import java.nio.charset.Charset
 import java.util.{Arrays, Collections, List => JList}
 
 import org.scalatest.FunSuite
@@ -52,6 +57,15 @@ class NaturalSortSuite extends FunSuite with Matchers {
     val sortedList = unorderedList.sortWith(Comparator.compareBool)
 
     sortedList should contain theSameElementsInOrderAs resultList
+  }
+
+  test("performance benchmark") {
+    val filePath = getClass.getClassLoader.getResource("perftest/perfinput.txt").getFile
+    val unorderedList: JList[String] = Files.readLines(new File(filePath), Charset.forName("utf-8"));
+
+    val timer = Stopwatch.createStarted()
+    Collections.sort(unorderedList, new NaturalComparator)
+    System.out.println("Time taken to sort 1 million entries: " + timer.stop)
   }
 
 }
