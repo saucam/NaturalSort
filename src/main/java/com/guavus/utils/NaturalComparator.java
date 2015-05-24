@@ -86,6 +86,11 @@ public class NaturalComparator implements Comparator<String> {
         int s2Length = s2.length();
 
         while (thisMarker < s1Length && thatMarker < s2Length) {
+            if (s1.charAt(thisMarker) == s2.charAt(thatMarker)) {
+                thisMarker++;
+                thatMarker++;
+                continue;
+            }
             int result = 0;
             int thisChunk = getChunkOffset(s1, s1Length, thisMarker);
             int thatChunk = getChunkOffset(s2, s2Length, thatMarker);

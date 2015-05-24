@@ -5,7 +5,7 @@ import com.google.common.io.Files
 
 import java.io.File
 import java.nio.charset.Charset
-import java.util.{Arrays, Collections, List => JList}
+import java.util.{Arrays, ArrayList, Collections, List => JList}
 
 import org.scalatest.FunSuite
 import org.scalatest.Matchers
@@ -63,9 +63,28 @@ class NaturalSortSuite extends FunSuite with Matchers {
     val filePath = getClass.getClassLoader.getResource("perftest/perfinput.txt").getFile
     val unorderedList: JList[String] = Files.readLines(new File(filePath), Charset.forName("utf-8"));
 
-    val timer = Stopwatch.createStarted()
-    Collections.sort(unorderedList, new NaturalComparator)
-    System.out.println("Time taken to sort 1 million entries: " + timer.stop)
+    var time: Stopwatch = null
+    // repeated for warming up the JVM
+    for(i <- 0 to 7) {
+      val list2 = new ArrayList(unorderedList)
+
+      val timer1 = Stopwatch.createStarted()
+      Collections.sort(list2, new NaturalComparator)
+      time = timer1.stop
+    }
+    System.out.println("Time taken to natural sort 1 million entries: " + time)
+
+    // repeated for warming up the JVM
+    for(i <- 0 to 7) {
+      val list2 = new ArrayList(unorderedList)
+
+      val timer1 = Stopwatch.createStarted()
+      Collections.sort(list2)
+      time = timer1.stop
+    }
+    System.out.println("Time taken to lexicographically sort 1 million entries: " + time)
+
   }
 
 }
+
