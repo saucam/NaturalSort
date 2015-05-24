@@ -44,17 +44,14 @@ public class NaturalComparator implements Comparator<String> {
     }
 
     /** Length of string is passed in for improved efficiency (only need to calculate it once) **/
-    private final String getChunk(String s, int slength, int marker) {
-        StringBuilder chunk = new StringBuilder();
+    private final int getChunkOffset(String s, int slength, int marker) {
         char c = s.charAt(marker);
-        chunk.append(c);
         marker++;
         if (isDigit(c)) {
             while (marker < slength) {
                 c = s.charAt(marker);
                 if (!isDigit(c))
                     break;
-                chunk.append(c);
                 marker++;
             }
         } else {
@@ -62,11 +59,24 @@ public class NaturalComparator implements Comparator<String> {
                 c = s.charAt(marker);
                 if (isDigit(c))
                     break;
-                chunk.append(c);
                 marker++;
             }
         }
-        return chunk.toString();
+        return marker;
+    }
+
+    public int compareRegion(String s1, int off1, int len1, String s2, int off2, int len2) {
+        int lim = Math.min(len1, len2);
+        int i = 0;
+        while (i < lim) {
+            char c1 = s1.charAt(off1+i);
+            char c2 = s2.charAt(off2+i);
+            if (c1 != c2) {
+                return c1 - c2;
+            }
+            i++;
+        }
+        return len1 - len2;
     }
 
     public int compare(String s1, String s2) {
@@ -76,33 +86,33 @@ public class NaturalComparator implements Comparator<String> {
         int s2Length = s2.length();
 
         while (thisMarker < s1Length && thatMarker < s2Length) {
-            String thisChunk = getChunk(s1, s1Length, thisMarker);
-            thisMarker += thisChunk.length();
-
-            String thatChunk = getChunk(s2, s2Length, thatMarker);
-            thatMarker += thatChunk.length();
-
-            // If both chunks contain numeric characters, sort them numerically
             int result = 0;
-            if (isDigit(thisChunk.charAt(0)) && isDigit(thatChunk.charAt(0))) {
+            int thisChunk = getChunkOffset(s1, s1Length, thisMarker);
+            int thatChunk = getChunkOffset(s2, s2Length, thatMarker);
+            int thisChunkLength = thisChunk - thisMarker;
+            int thatChunkLength = thatChunk - thatMarker;
+            // If both chunks contain numeric characters, sort them numerically
+            if (isDigit(s1.charAt(thisMarker)) && isDigit(s2.charAt(thatMarker))) {
                 // Simple chunk comparison by length.
-                int thisChunkLength = thisChunk.length();
-                result = thisChunkLength - thatChunk.length();
+                result = thisChunkLength - thatChunkLength;
                 // If equal, the first different number counts
                 if (result == 0) {
-                    for (int i = 0; i < thisChunkLength; i++) {
-                        result = thisChunk.charAt(i) - thatChunk.charAt(i);
+                    for (int i = thisMarker, j = thatMarker; i < thisChunk; i++, j++) {
+                        result = s1.charAt(i) - s2.charAt(j);
                         if (result != 0) {
                             return result;
                         }
                     }
                 }
             } else {
-                result = thisChunk.compareTo(thatChunk);
+                result = compareRegion(s1, thisMarker, thisChunkLength, s2, thatMarker, thatChunkLength);
             }
 
             if (result != 0)
                 return result;
+
+            thisMarker = thisChunk;
+            thatMarker = thatChunk;
         }
 
         return s1Length - s2Length;
